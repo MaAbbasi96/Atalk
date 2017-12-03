@@ -13,7 +13,7 @@ grammar Atalk;
         SymbolTable.push(new SymbolTable(SymbolTable.top));
         SymbolTable.top.setOffset(Register.SP, offset);
     }
-    
+
     void putLocalVar(String name, Type type) throws ItemAlreadyExistsException {
         SymbolTable.top.put(
             new SymbolTableLocalVariableItem(
@@ -43,7 +43,15 @@ actor:
 	;
 
 state:
-		type ID (',' ID)* NL
+		var_type = type var_id = ID (',' ID)* NL
+        {
+            try {
+                putLocalVar($var_id.text, $var_type.return_type);
+            }
+            catch(ItemAlreadyExistsException ex) {
+            	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+            }
+        }
 	;
 
 receiver:
@@ -54,9 +62,9 @@ receiver:
         {endScope();}
 	;
 
-type:
-		'char' ('[' CONST_NUM ']')*
-	|	'int' ('[' CONST_NUM ']')*
+type returns [Type return_type]:
+		'char' ('[' CONST_NUM ']')* { $return_type = CharType.getInstance(); }
+	|	'int' ('[' CONST_NUM ']')* { $return_type = IntType.getInstance(); }
 	;
 
 block:
@@ -86,6 +94,7 @@ statement:
 stm_vardef:
 		var_type = type var_id = ID ('=' expr)? (',' ID ('=' expr)?)* NL
         {
+            print("vardef");
             try {
                 putLocalVar($var_id.text, $var_type.return_type);
             }

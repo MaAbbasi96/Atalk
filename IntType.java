@@ -1,5 +1,5 @@
 public class IntType extends Type {
-	
+
 	public int size() {
 		return Type.WORD_BYTES;
 	}
