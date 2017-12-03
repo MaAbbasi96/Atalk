@@ -1,7 +1,30 @@
 grammar Atalk;
 
+@members{
+
+    void print(String str){
+        System.out.println(str);
+    }
+
+    void beginScope() {
+        int offset = 0;
+        if(SymbolTable.top != null)
+            offset = SymbolTable.top.getOffset(Register.SP);
+        SymbolTable.push(new SymbolTable(SymbolTable.top));
+        SymbolTable.top.setOffset(Register.SP, offset);
+    }
+
+	void endScope() {
+	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP));
+	     SymbolTable.pop();
+    }
+
+}
+
 program:
+        {beginScope();}
 		(actor | NL)*
+        {endScope();}
 	;
 
 actor:
