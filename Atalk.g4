@@ -13,6 +13,15 @@ grammar Atalk;
         SymbolTable.push(new SymbolTable(SymbolTable.top));
         SymbolTable.top.setOffset(Register.SP, offset);
     }
+    
+    void putLocalVar(String name, Type type) throws ItemAlreadyExistsException {
+        SymbolTable.top.put(
+            new SymbolTableLocalVariableItem(
+                new Variable(name, type),
+                SymbolTable.top.getOffset(Register.SP)
+            )
+        );
+    }
 
 	void endScope() {
 	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP));
@@ -75,7 +84,15 @@ statement:
 	;
 
 stm_vardef:
-		type ID ('=' expr)? (',' ID ('=' expr)?)* NL
+		var_type = type var_id = ID ('=' expr)? (',' ID ('=' expr)?)* NL
+        {
+            try {
+                putLocalVar($var_id.text, $var_type.return_type);
+            }
+            catch(ItemAlreadyExistsException ex) {
+            	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+            }
+        }
 	;
 
 stm_tell:
