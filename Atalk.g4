@@ -22,15 +22,15 @@ grammar Atalk;
 }
 
 program:
-        {beginScope();}
 		(actor | NL)*
-        {endScope();}
 	;
 
 actor:
+        {beginScope();}
 		'actor' ID '<' CONST_NUM '>' NL
 			(state | receiver | NL)*
 		'end' (NL | EOF)
+        {endScope();}
 	;
 
 state:
@@ -38,9 +38,11 @@ state:
 	;
 
 receiver:
+        {beginScope();}
 		'receiver' ID '(' (type ID (',' type ID)*)? ')' NL
 			statements
 		'end' NL
+        {endScope();}
 	;
 
 type:
@@ -49,9 +51,11 @@ type:
 	;
 
 block:
+        {beginScope();}
 		'begin' NL
 			statements
 		'end' NL
+        {endScope();}
 	;
 
 statements:
@@ -83,16 +87,20 @@ stm_write:
 	;
 
 stm_if_elseif_else:
+        {beginScope();}
 		'if' expr NL statements
 		('elseif' expr NL statements)*
 		('else' NL statements)?
 		'end' NL
+        {endScope();}
 	;
 
 stm_foreach:
+        {beginScope();}
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
+        {endScope();}
 	;
 
 stm_quit:

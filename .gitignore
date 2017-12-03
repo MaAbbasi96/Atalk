@@ -1,0 +1,5 @@
+*.class
+*.tokens
+Atalk*.javar
+input.atalk
+Atalk*.java
