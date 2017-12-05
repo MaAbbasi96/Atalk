@@ -23,6 +23,14 @@ grammar Atalk;
         );
     }
 
+    void putActor(String name, int box_size) throws ItemAlreadyExistsException {
+        SymbolTable.top.put(
+            new SymbolTableActorItem(
+                new Actor(name, box_size)
+            )
+        );
+    }
+
 	void endScope() {
 	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP));
 	     SymbolTable.pop();
@@ -31,15 +39,27 @@ grammar Atalk;
 }
 
 program:
+        {beginScope();}
 		(actor | NL)*
+        {endScope();}
 	;
 
 actor:
-        {beginScope();}
-		'actor' ID '<' CONST_NUM '>' NL
+		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
+            {
+                try{
+                    putActor($actor_name.text, $actor_box_size.int);
+                }
+                catch(ItemAlreadyExistsException ex) {
+                	print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
+                }
+                finally{
+                    beginScope();
+                }
+            }
 			(state | receiver | NL)*
-		'end' (NL | EOF)
-        {endScope();}
+            {endScope();}
+        'end' (NL | EOF)
 	;
 
 state:

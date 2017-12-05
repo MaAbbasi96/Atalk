@@ -5,9 +5,9 @@ public class SymbolTable {
 	// Static members region
 
 	public static SymbolTable top;
-	
+
 	private static Stack<SymbolTable> stack = new Stack<SymbolTable>();
-	
+
 	private static Queue<SymbolTable> queue = new LinkedList<SymbolTable>();
 
 	private static int definitionsCount = 0;
@@ -83,9 +83,9 @@ public class SymbolTable {
 
 		if(value != null && value.useMustBeComesAfterDef() &&
 				SymbolTable.definitionsCount <= value.getDefinitionNumber()) {
-			if(pre != null) 
+			if(pre != null)
 				return pre.get(key);
-			else 
+			else
 				return null;
 		}
 
