@@ -1,5 +1,9 @@
 grammar Atalk;
 
+@header{
+    import java.util.ArrayList;
+}
+
 @members{
 
     void print(String str){
@@ -31,6 +35,14 @@ grammar Atalk;
         );
     }
 
+    void putReceiver(String name, ArrayList<Variable> arguments) throws ItemAlreadyExistsException {
+        SymbolTable.top.put(
+            new SymbolTableReceiverItem(
+                new Receiver(name, arguments)
+            )
+        );
+    }
+
 	void endScope() {
 	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP));
 	     SymbolTable.pop();
@@ -49,12 +61,10 @@ actor:
             {
                 try{
                     putActor($actor_name.text, $actor_box_size.int);
+                    beginScope();
                 }
                 catch(ItemAlreadyExistsException ex) {
                 	print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
-                }
-                finally{
-                    beginScope();
                 }
             }
 			(state | receiver | NL)*
@@ -75,8 +85,18 @@ state:
 	;
 
 receiver:
-        {beginScope();}
-		'receiver' ID '(' (type ID (',' type ID)*)? ')' NL
+        {ArrayList<Variable> arguments = new ArrayList<>();}
+		'receiver' receiver_name = ID '(' (var_type = type var_id = ID {arguments.add(new Variable($var_id.text, $var_type.return_type));}
+        (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL 
+        {
+            try{
+                putReceiver($receiver_name.text, arguments);
+                beginScope();
+            }
+            catch(ItemAlreadyExistsException ex) {
+                print(String.format("[Line #%s] Actor \"%s\" already exists.", $receiver_name.getLine(), $receiver_name.text));
+            }
+        }
 			statements
 		'end' NL
         {endScope();}
