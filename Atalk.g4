@@ -114,6 +114,17 @@ receiver:
             try{
                 putReceiver($receiver_name.text, arguments);
                 beginScope();
+                for(int i = 0; i < arguments.size(); i++){
+                    try{
+                        putLocalVar(arguments.get(i).getName(), arguments.get(i).getType());
+                    }
+                    catch(ItemAlreadyExistsException ex) {
+                    	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+                    }
+                    catch(InvalidArgumentException e){
+                        print("Wrong Size");
+                    }
+                }
             }
             catch(ItemAlreadyExistsException ex) {
                 flag = false;
