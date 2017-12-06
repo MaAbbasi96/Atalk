@@ -6,6 +6,7 @@ grammar Atalk;
 
 @members{
     boolean have_actor = false;
+    boolean in_loop = false;
 
     void print(String str){
         System.out.println(str);
@@ -178,7 +179,6 @@ statement:
 stm_vardef:
 		var_type = type var_id = ID ('=' expr)? (',' ID ('=' expr)?)* NL
         {
-            print("vardef");
             try {
                 putLocalVar($var_id.text, $var_type.return_type);
             }
@@ -209,11 +209,17 @@ stm_if_elseif_else:
 	;
 
 stm_foreach:
-        {beginScope();}
+        {
+            beginScope();
+            in_loop = true;
+        }
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
-        {endScope();}
+        {
+            endScope();
+            in_loop = false;
+        }
 	;
 
 stm_quit:
@@ -222,6 +228,10 @@ stm_quit:
 
 stm_break:
 		'break' NL
+        {
+            if(!in_loop)
+                print("not in a loop");
+        }
 	;
 
 stm_assignment:
