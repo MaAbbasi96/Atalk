@@ -30,6 +30,16 @@ grammar Atalk;
             )
         );
     }
+    void putGlobalVar(String name, Type type) throws ItemAlreadyExistsException, InvalidArgumentException {
+        if(!type.is_valid())
+            throw new InvalidArgumentException();
+        SymbolTable.top.put(
+            new SymbolTableGlobalVariableItem(
+                new Variable(name, type),
+                SymbolTable.top.getOffset(Register.GP)
+            )
+        );
+    }
 
     void putActor(String name, int box_size) throws ItemAlreadyExistsException, InvalidArgumentException {
         if(box_size <= 0)
@@ -50,7 +60,7 @@ grammar Atalk;
     }
 
 	void endScope() {
-	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP));
+	     print("Stack offset: " + SymbolTable.top.getOffset(Register.SP) + " and Global offset: " + SymbolTable.top.getOffset(Register.GP));
 	     SymbolTable.pop();
     }
 
@@ -105,13 +115,13 @@ state:
         {
             for(int i = 0; i < ids.size(); i++){
                 try {
-                    putLocalVar(ids.get(i), $var_type.return_type);
-                    print("ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and offset: " + (SymbolTable.top.getOffset(Register.SP) - $var_type.return_type.size()));
+                    putGlobalVar(ids.get(i), $var_type.return_type);
+                    print("ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and Global offset: " + (SymbolTable.top.getOffset(Register.GP) - $var_type.return_type.size()));
                 }
                 catch(ItemAlreadyExistsException ex) {
             	    print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), ids.get(i)));
                     try{
-                           putLocalVar(ids.get(i)+"_temp_1", $var_type.return_type);
+                           putGlobalVar(ids.get(i)+"_temp_1", $var_type.return_type);
                     }
                     catch(ItemAlreadyExistsException ex1){}
                     catch(InvalidArgumentException e1){}
@@ -120,9 +130,9 @@ state:
                     print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), ids.get(i)));
                     try{
                         SymbolTable.top.put(
-                            new SymbolTableLocalVariableItem(
+                            new SymbolTableGlobalVariableItem(
                                 new Variable(ids.get(i), $var_type.return_type),
-                                SymbolTable.top.getOffset(Register.SP)
+                                SymbolTable.top.getOffset(Register.GP)
                             )
                         );
                     }
