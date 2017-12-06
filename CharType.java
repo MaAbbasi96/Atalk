@@ -1,7 +1,7 @@
 public class CharType extends Type {
 
 	public int size() {
-		return Type.WORD_BYTES;
+		return Type.CHAR_BYTES;
 	}
 
 	@Override
@@ -10,6 +10,11 @@ public class CharType extends Type {
 			return true;
 		return false;
 	}
+
+	@Override
+	public boolean is_valid(){
+        return true;
+    }
 
 	@Override
 	public String toString() {

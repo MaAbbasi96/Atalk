@@ -18,7 +18,9 @@ grammar Atalk;
         SymbolTable.top.setOffset(Register.SP, offset);
     }
 
-    void putLocalVar(String name, Type type) throws ItemAlreadyExistsException {
+    void putLocalVar(String name, Type type) throws ItemAlreadyExistsException, InvalidArgumentException {
+        if(!type.is_valid())
+            throw new InvalidArgumentException();
         SymbolTable.top.put(
             new SymbolTableLocalVariableItem(
                 new Variable(name, type),
@@ -27,7 +29,9 @@ grammar Atalk;
         );
     }
 
-    void putActor(String name, int box_size) throws ItemAlreadyExistsException {
+    void putActor(String name, int box_size) throws ItemAlreadyExistsException, InvalidArgumentException {
+        if(box_size <= 0)
+            throw new InvalidArgumentException();
         SymbolTable.top.put(
             new SymbolTableActorItem(
                 new Actor(name, box_size)
@@ -57,6 +61,7 @@ program:
 	;
 
 actor:
+        {Boolean flag = true;}
 		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
             {
                 try{
@@ -65,10 +70,15 @@ actor:
                 }
                 catch(ItemAlreadyExistsException ex) {
                 	print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
+                    flag = false;
+                }
+                catch(InvalidArgumentException e){
+                    print("Wrong Box Size");
+                    flag = false;
                 }
             }
 			(state | receiver | NL)*
-            {endScope();}
+            {if(flag) endScope();}
         'end' (NL | EOF)
 	;
 
@@ -80,6 +90,9 @@ state:
             }
             catch(ItemAlreadyExistsException ex) {
             	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+            }
+            catch(InvalidArgumentException e){
+                print("Wrong Size");
             }
         }
 	;
@@ -107,8 +120,18 @@ receiver:
 	;
 
 type returns [Type return_type]:
-		'char' ('[' CONST_NUM ']')* { $return_type = CharType.getInstance(); }
-	|	'int' ('[' CONST_NUM ']')* { $return_type = IntType.getInstance(); }
+        {ArrayList<Integer> dimension = new ArrayList<>();}
+		'char' ('[' size = CONST_NUM ']'{dimension.add($size.int);})* {
+            $return_type = CharType.getInstance();
+            for(int i = dimension.size()-1; i >= 0; i--)
+                $return_type = new ArrayType(dimension.get(i), $return_type);
+        }
+	|	{ArrayList<Integer> dimension = new ArrayList<>();}
+        'int' ('[' size = CONST_NUM ']'{dimension.add($size.int);})*  {
+        $return_type = IntType.getInstance();
+        for(int i = dimension.size()-1; i >= 0; i--)
+            $return_type = new ArrayType(dimension.get(i), $return_type);
+        }
 	;
 
 block:
@@ -144,6 +167,9 @@ stm_vardef:
             }
             catch(ItemAlreadyExistsException ex) {
             	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+            }
+            catch(InvalidArgumentException e){
+                print("Wrong Size");
             }
         }
 	;
@@ -273,7 +299,7 @@ expr_other:
 	;
 
 CONST_NUM:
-		[0-9]+
+		('-' | '+')?[0-9]+
 	;
 
 CONST_CHAR:

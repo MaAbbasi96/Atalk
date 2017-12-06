@@ -12,6 +12,11 @@ public class IntType extends Type {
 	}
 
 	@Override
+	public boolean is_valid(){
+        return true;
+    }
+
+	@Override
 	public String toString() {
 		return "int";
 	}
