@@ -11,8 +11,11 @@ public class ArrayType extends Type {
 
     @Override
     public boolean is_valid(){
-        if(size <= 0 || !tail.is_valid())
+        if(size <= 0 || !tail.is_valid()){
+            if(size <= 0)
+                size = 0;
             return false;
+        }
         return true;
     }
 
