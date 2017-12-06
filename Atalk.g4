@@ -5,6 +5,7 @@ grammar Atalk;
 }
 
 @members{
+    boolean have_actor = false;
 
     void print(String str){
         System.out.println(str);
@@ -57,7 +58,11 @@ grammar Atalk;
 program:
         {beginScope();}
 		(actor | NL)*
-        {endScope();}
+        {
+            if(!have_actor)
+                print("Actor not declared");
+            endScope();
+        }
 	;
 
 actor:
@@ -66,6 +71,7 @@ actor:
             {
                 try{
                     putActor($actor_name.text, $actor_box_size.int);
+                    have_actor = true;
                     beginScope();
                 }
                 catch(ItemAlreadyExistsException ex) {
