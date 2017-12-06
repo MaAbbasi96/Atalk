@@ -85,21 +85,25 @@ state:
 	;
 
 receiver:
-        {ArrayList<Variable> arguments = new ArrayList<>();}
+        {
+            ArrayList<Variable> arguments = new ArrayList<>();
+            Boolean flag = true;
+        }
 		'receiver' receiver_name = ID '(' (var_type = type var_id = ID {arguments.add(new Variable($var_id.text, $var_type.return_type));}
-        (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL 
+        (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL
         {
             try{
                 putReceiver($receiver_name.text, arguments);
                 beginScope();
             }
             catch(ItemAlreadyExistsException ex) {
+                flag = false;
                 print(String.format("[Line #%s] Actor \"%s\" already exists.", $receiver_name.getLine(), $receiver_name.text));
             }
         }
 			statements
 		'end' NL
-        {endScope();}
+        {if(flag) endScope();}
 	;
 
 type returns [Type return_type]:
