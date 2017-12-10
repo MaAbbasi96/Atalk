@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Utils {
     public static boolean have_actor = false;
-    public static boolean in_loop = false;
+    public static int in_loop = 0;
     public static boolean have_error = false;
     public static String log;
     public static void print(String str){

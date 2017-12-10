@@ -268,14 +268,14 @@ stm_if_elseif_else:
 stm_foreach:
         {
             Utils.beginScope();
-            Utils.in_loop = true;
+            Utils.in_loop++;
         }
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
         {
             Utils.endScope();
-            Utils.in_loop = false;
+            Utils.in_loop--;
         }
 	;
 
@@ -286,7 +286,7 @@ stm_quit:
 stm_break:
 		break_var = 'break' NL
         {
-            if(!Utils.in_loop)
+            if(Utils.in_loop==0)
                 Utils.print(String.format("[Line #%s] Break outside loop.", $break_var.getLine()));
         }
 	;
