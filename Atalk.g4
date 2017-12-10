@@ -22,18 +22,27 @@ program:
 actor:
 		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
             {
+                String name=$actor_name.text;
                 try{
-                    Utils.putActor($actor_name.text, $actor_box_size.int);
-                    Utils.log += "Actor: " + $actor_name.text + " with size: " + $actor_box_size.text + "\n";
+                    Utils.print(name);
+                    Utils.putActor(name, $actor_box_size.int);
+                    Utils.log += "Actor: " + name + " with size: " + $actor_box_size.text + "\n";
                 }
                 catch(ItemAlreadyExistsException ex) {
+                    Utils.print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), name));
+                    int counter = 1;
                     Utils.have_error = true;
-                	Utils.print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
-                    try{
-                        Utils.putActor($actor_name.text+"_temp_1", $actor_box_size.int);
+                    name += "_Temporary_";
+                    while(true){
+                        try{
+                            Utils.putActor(name+counter, $actor_box_size.int);
+                            Utils.log += "Actor: " + name+counter + " with size: " + $actor_box_size.text + "\n";
+                            break;
+                        }catch(ItemAlreadyExistsException ex2) {
+                            counter++;
+                        }catch(InvalidArgumentException ex3){}
+
                     }
-                    catch(ItemAlreadyExistsException ex1){}
-                    catch(InvalidArgumentException e1){}
                 }
                 catch(InvalidArgumentException e){
                     Utils.have_error = true;
@@ -49,10 +58,10 @@ actor:
                         Utils.print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
                     }
                 }
-                finally{
-                    Utils.have_actor = true;
-                    Utils.beginScope();
-                }
+            }
+            {
+                Utils.have_actor = true;
+                Utils.beginScope();
             }
 			(state | receiver | NL)*
             {Utils.endScope();}
@@ -99,6 +108,7 @@ receiver:
 		'receiver' receiver_name = ID '(' (var_type = type var_id = ID {arguments.add(new Variable($var_id.text, $var_type.return_type));}
         (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL
         {
+            String name=$receiver_name.text;
             try{
                 Utils.putReceiver($receiver_name.text, arguments);
                 Utils.log += "Receiver: " + $receiver_name.text + " with arguments:" + "\n";
@@ -110,10 +120,23 @@ receiver:
             catch(ItemAlreadyExistsException ex) {
                 Utils.have_error = true;
                 Utils.print(String.format("[Line #%s] Receiver \"%s\" already exists.", $receiver_name.getLine(), $receiver_name.text));
-                try{
-                    Utils.putReceiver($receiver_name.text+"_temp_1", arguments);
-                }
-                catch(ItemAlreadyExistsException ex1){}
+                    int counter = 1;
+                    Utils.have_error = true;
+                    name += "_Temporary_";
+                    while(true){
+                        try{
+                            Utils.putReceiver(name+ counter, arguments);
+                            Utils.log += "Receiver: " + $receiver_name.text + " with arguments:" + "\n";
+                            if(arguments.size() == 0)
+                                Utils.log += "no arguments!!!\n";
+                            for(int i = 0; i < arguments.size(); i++)
+                                Utils.log += arguments.get(i).toString() + ",\n";
+                            break;
+                        }catch(ItemAlreadyExistsException ex2) {
+                            counter++;
+                        }
+
+                    }
             }
             finally{
                 Utils.beginScope();
