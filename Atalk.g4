@@ -6,7 +6,7 @@ grammar Atalk;
 
 @members{
     boolean have_actor = false;
-    boolean in_loop = false;
+    int in_loop = 0;
     boolean have_error = false;
     String log;
 
@@ -83,6 +83,7 @@ program:
 actor:
 		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
             {
+                String name = $actor_name;
                 try{
                     putActor($actor_name.text, $actor_box_size.int);
                     log += "Actor: " + $actor_name.text + " with size: " + $actor_box_size.text + "\n";
@@ -306,14 +307,14 @@ stm_if_elseif_else:
 stm_foreach:
         {
             beginScope();
-            in_loop = true;
+            in_loop ++;
         }
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
         {
             endScope();
-            in_loop = false;
+            in_loop --;
         }
 	;
 
@@ -324,7 +325,7 @@ stm_quit:
 stm_break:
 		break_var = 'break' NL
         {
-            if(!in_loop)
+            if(in_loop == 0)
                 print(String.format("[Line #%s] Break outside loop.", $break_var.getLine()));
         }
 	;
