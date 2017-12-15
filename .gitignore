@@ -2,4 +2,5 @@
 *.tokens
 Atalk*.javar
 input.atalk
-Atalk*.java
+AtalkPass1*.java
+AtalkPass2*.java

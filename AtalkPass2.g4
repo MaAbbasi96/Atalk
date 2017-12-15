@@ -1,7 +1,15 @@
 grammar AtalkPass2;
 
 program:
+        {
+            UtilsPass2.print("Pass2 started -------------------------");
+            UtilsPass2.beginScope();
+        }
 		(actor | NL)*
+        {
+            UtilsPass2.endScope();
+            UtilsPass2.print("Pass2 finished -------------------------");
+        }
 	;
 
 actor:
