@@ -5,6 +5,7 @@ grammar Atalk;
 }
 
 @members{
+<<<<<<< HEAD
     boolean have_actor = false;
     int in_loop = 0;
     boolean have_error = false;
@@ -66,40 +67,54 @@ grammar Atalk;
 	     SymbolTable.pop();
     }
 
+=======
+>>>>>>> edad6236edb84cd85f78b5f6b26fdf7d1784b095
 }
 
 program:
-        {beginScope();}
+        {Utils.beginScope();}
 		(actor | NL)*
         {
-            if(!have_actor)
-                print("No actor declared");
-            if(!have_error)
-                print(log);
-            endScope();
+            if(!Utils.have_actor)
+                Utils.print("No actor declared");
+            if(!Utils.have_error)
+                Utils.print(Utils.log);
+            Utils.endScope();
         }
 	;
 
 actor:
 		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
             {
+<<<<<<< HEAD
                 String name = $actor_name;
+=======
+                String name=$actor_name.text;
+>>>>>>> edad6236edb84cd85f78b5f6b26fdf7d1784b095
                 try{
-                    putActor($actor_name.text, $actor_box_size.int);
-                    log += "Actor: " + $actor_name.text + " with size: " + $actor_box_size.text + "\n";
+                    Utils.print(name);
+                    Utils.putActor(name, $actor_box_size.int);
+                    Utils.log += "Actor: " + name + " with size: " + $actor_box_size.text + "\n";
                 }
                 catch(ItemAlreadyExistsException ex) {
-                    have_error = true;
-                	print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
-                    try{
-                        putActor($actor_name.text+"_temp_1", $actor_box_size.int);
+                    Utils.print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), name));
+                    int counter = 1;
+                    Utils.have_error = true;
+                    name += "_Temporary_";
+                    while(true){
+                        try{
+                            Utils.putActor(name+counter, $actor_box_size.int);
+                            Utils.log += "Actor: " + name+counter + " with size: " + $actor_box_size.text + "\n";
+                            break;
+                        }catch(ItemAlreadyExistsException ex2) {
+                            counter++;
+                        }catch(InvalidArgumentException ex3){}
+
                     }
-                    catch(ItemAlreadyExistsException ex1){}
-                    catch(InvalidArgumentException e1){}
                 }
                 catch(InvalidArgumentException e){
-                    have_error = true;
-                    print(String.format("[Line #%s] Actor \"%s\" wrong box size.", $actor_name.getLine(), $actor_name.text));
+                    Utils.have_error = true;
+                    Utils.print(String.format("[Line #%s] Actor \"%s\" wrong box size.", $actor_name.getLine(), $actor_name.text));
                     try{
                         SymbolTable.top.put(
                             new SymbolTableActorItem(
@@ -108,16 +123,16 @@ actor:
                         );
                     }
                     catch(ItemAlreadyExistsException ex1){
-                        print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
+                        Utils.print(String.format("[Line #%s] Actor \"%s\" already exists.", $actor_name.getLine(), $actor_name.text));
                     }
                 }
-                finally{
-                    have_actor = true;
-                    beginScope();
-                }
+            }
+            {
+                Utils.have_actor = true;
+                Utils.beginScope();
             }
 			(state | receiver | NL)*
-            {endScope();}
+            {Utils.endScope();}
         'end' (NL | EOF)
 	;
 
@@ -127,21 +142,21 @@ state:
         {
             for(int i = 0; i < ids.size(); i++){
                 try {
-                    putGlobalVar(ids.get(i), $var_type.return_type);
-                    log += "ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and Global offset: " + (SymbolTable.top.getOffset(Register.GP) - $var_type.return_type.size()) + "\n";
+                    Utils.putGlobalVar(ids.get(i), $var_type.return_type);
+                    Utils.log += "ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and Global offset: " + (SymbolTable.top.getOffset(Register.GP) - $var_type.return_type.size()) + "\n";
                 }
                 catch(ItemAlreadyExistsException ex) {
-                    have_error = true;
-            	    print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), ids.get(i)));
+                    Utils.have_error = true;
+            	    Utils.print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), ids.get(i)));
                     try{
-                           putGlobalVar(ids.get(i)+"_temp_1", $var_type.return_type);
+                           Utils.putGlobalVar(ids.get(i)+"_temp_1", $var_type.return_type);
                     }
                     catch(ItemAlreadyExistsException ex1){}
                     catch(InvalidArgumentException e1){}
                 }
                 catch(InvalidArgumentException e){
-                    have_error = true;
-                    print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), ids.get(i)));
+                    Utils.have_error = true;
+                    Utils.print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), ids.get(i)));
                     try{
                         SymbolTable.top.put(
                             new SymbolTableGlobalVariableItem(
@@ -161,40 +176,54 @@ receiver:
 		'receiver' receiver_name = ID '(' (var_type = type var_id = ID {arguments.add(new Variable($var_id.text, $var_type.return_type));}
         (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL
         {
+            String name=$receiver_name.text;
             try{
-                putReceiver($receiver_name.text, arguments);
-                log += "Receiver: " + $receiver_name.text + " with arguments:" + "\n";
+                Utils.putReceiver($receiver_name.text, arguments);
+                Utils.log += "Receiver: " + $receiver_name.text + " with arguments:" + "\n";
                 if(arguments.size() == 0)
-                    log += "no arguments!!!\n";
+                    Utils.log += "no arguments!!!\n";
                 for(int i = 0; i < arguments.size(); i++)
-                    log += arguments.get(i).toString() + ",\n";
+                    Utils.log += arguments.get(i).toString() + ",\n";
             }
             catch(ItemAlreadyExistsException ex) {
-                have_error = true;
-                print(String.format("[Line #%s] Receiver \"%s\" already exists.", $receiver_name.getLine(), $receiver_name.text));
-                try{
-                    putReceiver($receiver_name.text+"_temp_1", arguments);
-                }
-                catch(ItemAlreadyExistsException ex1){}
+                Utils.have_error = true;
+                Utils.print(String.format("[Line #%s] Receiver \"%s\" already exists.", $receiver_name.getLine(), $receiver_name.text));
+                    int counter = 1;
+                    Utils.have_error = true;
+                    name += "_Temporary_";
+                    while(true){
+                        try{
+                            Utils.putReceiver(name+ counter, arguments);
+                            Utils.log += "Receiver: " + $receiver_name.text + " with arguments:" + "\n";
+                            if(arguments.size() == 0)
+                                Utils.log += "no arguments!!!\n";
+                            for(int i = 0; i < arguments.size(); i++)
+                                Utils.log += arguments.get(i).toString() + ",\n";
+                            break;
+                        }catch(ItemAlreadyExistsException ex2) {
+                            counter++;
+                        }
+
+                    }
             }
             finally{
-                beginScope();
+                Utils.beginScope();
                 for(int i = 0; i < arguments.size(); i++){
                     try{
-                        putLocalVar(arguments.get(i).getName(), arguments.get(i).getType());
+                        Utils.putLocalVar(arguments.get(i).getName(), arguments.get(i).getType());
                     }
                     catch(ItemAlreadyExistsException ex) {
-                        have_error = true;
-                    	print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
+                        Utils.have_error = true;
+                    	Utils.print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), $var_id.text));
                         try{
-                            putLocalVar($var_id.text+"_temp_1", $var_type.return_type);
+                            Utils.putLocalVar($var_id.text+"_temp_1", $var_type.return_type);
                         }
                         catch(ItemAlreadyExistsException ex1){}
                         catch(InvalidArgumentException e1){}
                     }
                     catch(InvalidArgumentException e){
-                        have_error = true;
-                        print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), $var_id.text));
+                        Utils.have_error = true;
+                        Utils.print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), $var_id.text));
                         try{
                             SymbolTable.top.put(
                                 new SymbolTableLocalVariableItem(
@@ -210,7 +239,7 @@ receiver:
         }
 			statements
 		'end' NL
-        {endScope();}
+        {Utils.endScope();}
 	;
 
 type returns [Type return_type]:
@@ -229,11 +258,11 @@ type returns [Type return_type]:
 	;
 
 block:
-        {beginScope();}
+        {Utils.beginScope();}
 		'begin' NL
 			statements
 		'end' NL
-        {endScope();}
+        {Utils.endScope();}
 	;
 
 statements:
@@ -258,21 +287,21 @@ stm_vardef:
         {
             for(int i = 0; i < ids.size(); i++){
                 try {
-                    putLocalVar(ids.get(i), $var_type.return_type);
-                    log += "ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and offset: " + (SymbolTable.top.getOffset(Register.SP) - $var_type.return_type.size()) + "\n";
+                    Utils.putLocalVar(ids.get(i), $var_type.return_type);
+                    Utils.log += "ID: " + ids.get(i) + " with type: " + $var_type.return_type + " and size: " + $var_type.return_type.size() + " and offset: " + (SymbolTable.top.getOffset(Register.SP) - $var_type.return_type.size()) + "\n";
                 }
                 catch(ItemAlreadyExistsException ex) {
-                    have_error = true;
-            	    print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), ids.get(i)));
+                    Utils.have_error = true;
+            	    Utils.print(String.format("[Line #%s] Variable \"%s\" already exists.", $var_id.getLine(), ids.get(i)));
                     try{
-                        putLocalVar(ids.get(i)+"_temp_1", $var_type.return_type);
+                        Utils.putLocalVar(ids.get(i)+"_temp_1", $var_type.return_type);
                     }
                     catch(ItemAlreadyExistsException ex1){}
                     catch(InvalidArgumentException e1){}
                 }
                 catch(InvalidArgumentException e){
-                    have_error = true;
-                    print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), ids.get(i)));
+                    Utils.have_error = true;
+                    Utils.print(String.format("[Line #%s] Variable \"%s\" wrong size.", $var_id.getLine(), ids.get(i)));
                     try{
                         SymbolTable.top.put(
                             new SymbolTableLocalVariableItem(
@@ -296,25 +325,35 @@ stm_write:
 	;
 
 stm_if_elseif_else:
-        {beginScope();}
+        {Utils.beginScope();}
 		'if' expr NL statements
 		('elseif' expr NL statements)*
 		('else' NL statements)?
 		'end' NL
-        {endScope();}
+        {Utils.endScope();}
 	;
 
 stm_foreach:
         {
+<<<<<<< HEAD
             beginScope();
             in_loop ++;
+=======
+            Utils.beginScope();
+            Utils.in_loop++;
+>>>>>>> edad6236edb84cd85f78b5f6b26fdf7d1784b095
         }
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
         {
+<<<<<<< HEAD
             endScope();
             in_loop --;
+=======
+            Utils.endScope();
+            Utils.in_loop--;
+>>>>>>> edad6236edb84cd85f78b5f6b26fdf7d1784b095
         }
 	;
 
@@ -325,8 +364,13 @@ stm_quit:
 stm_break:
 		break_var = 'break' NL
         {
+<<<<<<< HEAD
             if(in_loop == 0)
                 print(String.format("[Line #%s] Break outside loop.", $break_var.getLine()));
+=======
+            if(Utils.in_loop==0)
+                Utils.print(String.format("[Line #%s] Break outside loop.", $break_var.getLine()));
+>>>>>>> edad6236edb84cd85f78b5f6b26fdf7d1784b095
         }
 	;
 
