@@ -51,7 +51,6 @@ public class SymbolTable {
 		if(items.containsKey(item.getKey()))
 			throw new ItemAlreadyExistsException();
 		items.put(item.getKey(), item);
-
 		if(item instanceof SymbolTableVariableItemBase) {
 			SymbolTableVariableItemBase castedItem = (SymbolTableVariableItemBase) item;
 			setOffset(
