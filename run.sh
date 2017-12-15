@@ -1,8 +1,10 @@
 export CLASSPATH=".:/usr/local/lib/antlr-4.7-complete.jar:$CLASSPATH"
 rm *.class
 rm *.tokens
-rm Atalk*.java
-java -jar /usr/local/lib/antlr-4.7-complete.jar Atalk.g4
+rm AtalkPass1*.java
+rm AtalkPass2*.java
+java -jar /usr/local/lib/antlr-4.7-complete.jar AtalkPass1.g4
+java -jar /usr/local/lib/antlr-4.7-complete.jar AtalkPass2.g4
 javac *.java
-java org.antlr.v4.gui.TestRig Atalk program < ./input.atalk
+java Atalk input.atalk
 ./rm.sh
