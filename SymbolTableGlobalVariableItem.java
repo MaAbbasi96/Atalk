@@ -8,9 +8,4 @@ public class SymbolTableGlobalVariableItem extends SymbolTableVariableItemBase {
 	public Register getBaseRegister() {
 		return Register.GP;
 	}
-
-	@Override
-	public boolean useMustBeComesAfterDef() {
-		return true;
-	}
 }

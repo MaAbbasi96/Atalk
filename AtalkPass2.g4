@@ -13,9 +13,11 @@ program:
 	;
 
 actor:
+        {UtilsPass2.beginScope();}
 		'actor' ID '<' CONST_NUM '>' NL
 			(state | receiver | NL)*
 		'end' (NL | EOF)
+        {UtilsPass2.endScope();}
 	;
 
 state:
@@ -23,9 +25,11 @@ state:
 	;
 
 receiver:
+        {UtilsPass2.beginScope();}
 		'receiver' ID '(' (type ID (',' type ID)*)? ')' NL
 			statements
 		'end' NL
+        {UtilsPass2.endScope();}
 	;
 
 type:
@@ -34,9 +38,11 @@ type:
 	;
 
 block:
+        {UtilsPass2.beginScope();}
 		'begin' NL
 			statements
 		'end' NL
+        {UtilsPass2.endScope();}
 	;
 
 statements:
@@ -68,16 +74,18 @@ stm_write:
 	;
 
 stm_if_elseif_else:
-		'if' expr NL statements
-		('elseif' expr NL statements)*
-		('else' NL statements)?
+		'if'{UtilsPass2.beginScope();} expr NL statements {UtilsPass2.endScope();}
+		('elseif'{UtilsPass2.beginScope();} expr NL statements {UtilsPass2.endScope();})*
+		('else'{UtilsPass2.beginScope();} NL statements{UtilsPass2.endScope();})?
 		'end' NL
 	;
 
 stm_foreach:
+        {UtilsPass2.beginScope();}
 		'foreach' ID 'in' expr NL
 			statements
 		'end' NL
+        {UtilsPass2.endScope();}
 	;
 
 stm_quit:
