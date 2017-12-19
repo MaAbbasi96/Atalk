@@ -45,8 +45,8 @@ receiver:
         (',' var_type = type var_id = ID{arguments.add(new Variable($var_id.text, $var_type.return_type));})*)? ')' NL
             {Utils.putReciver(arguments,$receiver_name.getLine(),$receiver_name.text);}
 			statements
+            {Utils.endScope();}
 		'end' NL
-        {Utils.endScope();}
 	;
 
 type returns [Type return_type]:

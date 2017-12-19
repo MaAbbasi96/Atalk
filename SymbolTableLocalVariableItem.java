@@ -1,5 +1,5 @@
 public class SymbolTableLocalVariableItem extends SymbolTableVariableItemBase {
-	
+
 	public SymbolTableLocalVariableItem(Variable variable, int offset) {
 		super(variable, offset);
 	}

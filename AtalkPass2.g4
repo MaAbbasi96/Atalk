@@ -13,8 +13,8 @@ program:
 	;
 
 actor:
-        {UtilsPass2.beginScope();}
 		'actor' ID '<' CONST_NUM '>' NL
+        {UtilsPass2.beginScope();}
 			(state | receiver | NL)*
 		'end' (NL | EOF)
         {UtilsPass2.endScope();}
@@ -25,8 +25,13 @@ state:
 	;
 
 receiver:
+        { int counter = 0; }
+		'receiver' ID '(' (type ID {counter++;} (',' type ID {counter++;}  )*)? ')' NL
         {UtilsPass2.beginScope();}
-		'receiver' ID '(' (type ID (',' type ID)*)? ')' NL
+            {
+                for(int i=0; i<counter; i++)
+                    SymbolTable.define();
+            }
 			statements
 		'end' NL
         {UtilsPass2.endScope();}
@@ -38,8 +43,8 @@ type:
 	;
 
 block:
-        {UtilsPass2.beginScope();}
 		'begin' NL
+        {UtilsPass2.beginScope();}
 			statements
 		'end' NL
         {UtilsPass2.endScope();}
@@ -62,11 +67,12 @@ statement:
 	;
 
 stm_vardef:
-		type ID ('=' expr)? (',' ID ('=' expr)?)* NL
+		type ID {SymbolTable.define();} ('=' expr)? (',' ID {SymbolTable.define();} ('=' expr)?)* NL
 	;
 
 stm_tell:
-		(ID | 'sender' | 'self') '<<' ID '(' (expr (',' expr)*)? ')' NL
+		(actorName = ID | 'sender' | 'self') '<<' funcName = ID '(' (expr (',' expr)*)? ')' NL
+        {UtilsPass2.check_actor($actorName.text, $funcName.text, $actorName.getLine());}
 	;
 
 stm_write:
@@ -181,7 +187,7 @@ expr_other:
 		CONST_NUM
 	|	CONST_CHAR
 	|	CONST_STR
-	|	ID
+	|	name = ID {UtilsPass2.def_check($name.text, $name.getLine());}
 	|	'{' expr (',' expr)* '}'
 	|	'read' '(' CONST_NUM ')'
 	|	'(' expr ')'

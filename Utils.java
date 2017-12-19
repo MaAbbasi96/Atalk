@@ -66,11 +66,14 @@ public class Utils {
             String name = reciverName;
             try{
                 putItem(new SymbolTableReceiverItem(new Receiver(reciverName, arguments)));
-                log += "Receiver: " + reciverName + " with arguments:" + "\n";
+                log += "Receiver: " + reciverName + " with ";
                 if(arguments.size() == 0)
-                    log += "no arguments!!!\n";
+                    log += "no arguments!!!";
+                else
+                    log += "with arguments: ";
                 for(int i = 0; i < arguments.size(); i++)
-                    log += arguments.get(i).toString() + ",\n";
+                    log += arguments.get(i).toString() + ", ";
+                log += "\n";
             }
             catch(ItemAlreadyExistsException ex) {
                 have_error = true;

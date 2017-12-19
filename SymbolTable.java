@@ -76,6 +76,10 @@ public class SymbolTable {
 
 	public SymbolTableItem get(String key) {
 		SymbolTableItem value = items.get(key);
+		// if(value!=null){
+			// System.out.println(value.getKey());
+			// System.out.println("st1: " + SymbolTable.definitionsCount + " st2: " + value.getDefinitionNumber());
+		// }
 
 		if(value == null && pre != null)
 			return pre.get(key);
