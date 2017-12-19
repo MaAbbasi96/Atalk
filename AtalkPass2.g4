@@ -106,87 +106,106 @@ stm_assignment:
 		expr NL
 	;
 
-expr:
+expr returns [Type return_type]:
 		expr_assign
+        {$return_type = $expr_assign.return_type;}
 	;
 
-expr_assign:
+expr_assign returns [Type return_type]:
 		expr_or '=' expr_assign
-	|	expr_or
+	|	expr_or {$return_type = $expr_or.return_type;}
 	;
 
-expr_or:
+expr_or returns [Type return_type]:
 		expr_and expr_or_tmp
+        {$return_type = $expr_or_tmp.return_type;}
 	;
 
-expr_or_tmp:
+expr_or_tmp returns [Type return_type]:
 		'or' expr_and expr_or_tmp
+        {$return_type = $expr_and.return_type;}
 	|
 	;
 
-expr_and:
+expr_and returns [Type return_type]:
 		expr_eq expr_and_tmp
+        {$return_type = $expr_and_tmp.return_type;}
 	;
 
-expr_and_tmp:
+expr_and_tmp returns [Type return_type]:
 		'and' expr_eq expr_and_tmp
+        {$return_type = $expr_eq.return_type;}
 	|
 	;
 
-expr_eq:
+expr_eq returns [Type return_type]:
 		expr_cmp expr_eq_tmp
+        {$return_type = $expr_eq_tmp.return_type;}
 	;
 
-expr_eq_tmp:
+expr_eq_tmp returns [Type return_type]:
 		('==' | '<>') expr_cmp expr_eq_tmp
+        {$return_type = $expr_cmp.return_type;}
 	|
 	;
 
-expr_cmp:
+expr_cmp returns [Type return_type]:
 		expr_add expr_cmp_tmp
+        {$return_type = $expr_cmp_tmp.return_type;}
 	;
 
-expr_cmp_tmp:
+expr_cmp_tmp returns [Type return_type]:
 		('<' | '>') expr_add expr_cmp_tmp
+        {$return_type = $expr_add.return_type;}
 	|
 	;
 
-expr_add:
+expr_add returns [Type return_type]:
 		expr_mult expr_add_tmp
+        {$return_type = $expr_add_tmp.return_type;}
+
 	;
 
-expr_add_tmp:
+expr_add_tmp returns [Type return_type]:
 		('+' | '-') expr_mult expr_add_tmp
+        {$return_type = $expr_mult.return_type;}
 	|
 	;
 
-expr_mult:
+expr_mult returns [Type return_type]:
 		expr_un expr_mult_tmp
+        {$return_type = $expr_mult_tmp.return_type;}
 	;
 
-expr_mult_tmp:
+expr_mult_tmp returns [Type return_type]:
 		('*' | '/') expr_un expr_mult_tmp
+        {
+        $return_type = $expr_un.return_type;
+        if($return_type!= null)
+        UtilsPass2.print($return_type.toString());}
 	|
 	;
 
-expr_un:
+expr_un returns [Type return_type]:
 		('not' | '-') expr_un
-	|	expr_mem
+	|	expr_mem { $return_type = $expr_mem.return_type;}
 	;
 
-expr_mem:
+expr_mem returns [Type return_type]:
 		expr_other expr_mem_tmp
+        { $return_type = $expr_other.return_type;}
 	;
 
-expr_mem_tmp:
+expr_mem_tmp returns [Type return_type]:
 		'[' expr ']' expr_mem_tmp
+        { $return_type = $expr.return_type;}
 	|
 	;
 
-expr_other:
-		CONST_NUM
-	|	CONST_CHAR
-	|	CONST_STR
+expr_other returns [Type return_type]:
+		CONST_NUM { $return_type =  IntType.getInstance(); }
+	|	CONST_CHAR{ $return_type =  CharType.getInstance(); }
+	|	str = CONST_STR { $return_type = new ArrayType($str.text.length()-2,CharType.getInstance());}
 	|	name = ID {UtilsPass2.def_check($name.text, $name.getLine());}
 	|	'{' expr (',' expr)* '}'
 	|	'read' '(' CONST_NUM ')'
