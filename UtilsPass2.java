@@ -23,10 +23,8 @@ public class UtilsPass2 {
         if(item == null) {
             print(line + ") Item " + name + " doesn't exist.");
             try{
-                item = new SymbolTableLocalVariableItem(new Variable(name, NoType.getInstance()),SymbolTable.top.getOffset(Register.SP));
+                item = new SymbolTableLocalVariableTempItem(new Variable(name, NoType.getInstance()),SymbolTable.top.getOffset(Register.SP));
                 putItem(item);
-                print("" + item.getDefinitionNumber());
-                SymbolTable.define();
             }
             catch(ItemAlreadyExistsException ex) {}
         }
@@ -37,6 +35,6 @@ public class UtilsPass2 {
         }
     }
     public static void check_actor(String actorName, String funcName, int line){
-        
+
     }
 }
