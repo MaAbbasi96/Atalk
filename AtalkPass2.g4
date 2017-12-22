@@ -115,108 +115,160 @@ stm_assignment:
         }
 	;
 
-expr returns [Type return_type]:
-		expr_assign
-        {$return_type = $expr_assign.return_type;}
+expr returns [Type return_type, boolean lvalue = false]:
+		temp = expr_assign
+        {
+            $return_type = $expr_assign.return_type;
+            $lvalue = $temp.lvalue;
+        }
 	;
 
-expr_assign returns [Type return_type]:
-		expr_or '=' expr_assign {$return_type = UtilsPass2.generate_type($expr_or.return_type, $expr_assign.return_type);}
-	|	expr_or {$return_type = $expr_or.return_type;}
+expr_assign returns [Type return_type, boolean lvalue = false]:
+		temp = expr_or temp2 = '=' expr_assign {
+            $return_type = UtilsPass2.generate_type($expr_or.return_type, $expr_assign.return_type);
+            if(!$temp.lvalue)
+                UtilsPass2.print("Error " + $temp2.getLine() + ") Rvalue assignment!");
+        }
+	|	expr_or {
+            $return_type = $expr_or.return_type;
+            $lvalue = $expr_or.lvalue;
+        }
 	;
 
-expr_or returns [Type return_type]:
+expr_or returns [Type return_type, boolean lvalue = false]:
 		expr_and expr_or_tmp
-        {$return_type = UtilsPass2.generate_type($expr_and.return_type, $expr_or_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_and.return_type, $expr_or_tmp.return_type);
+            $lvalue = $expr_and.lvalue && $expr_or_tmp.lvalue;
+        }
 	;
 
-expr_or_tmp returns [Type return_type]:
+expr_or_tmp returns [Type return_type, boolean lvalue = false]:
 		'or' expr_and expr_or_tmp
         {$return_type = UtilsPass2.generate_type($expr_and.return_type, $expr_or_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null;$lvalue = true;}
 	;
 
-expr_and returns [Type return_type]:
+expr_and returns [Type return_type, boolean lvalue = false]:
 		expr_eq expr_and_tmp
-        {$return_type = UtilsPass2.generate_type($expr_eq.return_type, $expr_and_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_eq.return_type, $expr_and_tmp.return_type);
+            $lvalue = $expr_eq.lvalue && $expr_and_tmp.lvalue;
+        }
 	;
 
-expr_and_tmp returns [Type return_type]:
+expr_and_tmp returns [Type return_type, boolean lvalue = false]:
 		'and' expr_eq expr_and_tmp
         {$return_type = UtilsPass2.generate_type($expr_eq.return_type, $expr_and_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null;$lvalue = true;}
 	;
 
-expr_eq returns [Type return_type]:
+expr_eq returns [Type return_type, boolean lvalue = false]:
 		expr_cmp expr_eq_tmp
-        {$return_type = UtilsPass2.generate_type($expr_cmp.return_type, $expr_eq_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_cmp.return_type, $expr_eq_tmp.return_type);
+            $lvalue = $expr_cmp.lvalue && $expr_eq_tmp.lvalue;
+        }
 	;
 
-expr_eq_tmp returns [Type return_type]:
+expr_eq_tmp returns [Type return_type, boolean lvalue = false]:
 		('==' | '<>') expr_cmp expr_eq_tmp
         {$return_type = UtilsPass2.generate_type($expr_cmp.return_type, $expr_eq_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null;$lvalue = true;}
 	;
 
-expr_cmp returns [Type return_type]:
+expr_cmp returns [Type return_type, boolean lvalue = false]:
 		expr_add expr_cmp_tmp
-        {$return_type = UtilsPass2.generate_type($expr_add.return_type, $expr_cmp_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_add.return_type, $expr_cmp_tmp.return_type);
+            $lvalue = $expr_add.lvalue && $expr_cmp_tmp.lvalue;
+        }
 	;
 
-expr_cmp_tmp returns [Type return_type]:
+expr_cmp_tmp returns [Type return_type, boolean lvalue = false]:
 		('<' | '>') expr_add expr_cmp_tmp
         {$return_type = UtilsPass2.generate_type($expr_add.return_type, $expr_cmp_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null;$lvalue = true;}
 	;
 
-expr_add returns [Type return_type]:
+expr_add returns [Type return_type, boolean lvalue = false]:
 		expr_mult expr_add_tmp
-        {$return_type = UtilsPass2.generate_type($expr_mult.return_type, $expr_add_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_mult.return_type, $expr_add_tmp.return_type);
+            $lvalue = $expr_mult.lvalue && $expr_add_tmp.lvalue;
+        }
 	;
 
-expr_add_tmp returns [Type return_type]:
+expr_add_tmp returns [Type return_type, boolean lvalue = false]:
 		('+' | '-') expr_mult expr_add_tmp
         {$return_type = UtilsPass2.generate_type($expr_mult.return_type, $expr_add_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null; $lvalue = true;}
 	;
 
-expr_mult returns [Type return_type]:
+expr_mult returns [Type return_type, boolean lvalue = false]:
 		expr_un expr_mult_tmp
-        {$return_type = UtilsPass2.generate_type($expr_un.return_type, $expr_mult_tmp.return_type);}
+        {
+            $return_type = UtilsPass2.generate_type($expr_un.return_type, $expr_mult_tmp.return_type);
+            $lvalue = $expr_un.lvalue && $expr_mult_tmp.lvalue;
+        }
 	;
 
-expr_mult_tmp returns [Type return_type]:
+expr_mult_tmp returns [Type return_type, boolean lvalue = false]:
 		('*' | '/') expr_un expr_mult_tmp
         {$return_type = UtilsPass2.generate_type($expr_un.return_type, $expr_mult_tmp.return_type);}
-	|   {$return_type = null;}
+	|   {$return_type = null; $lvalue = true;}
 	;
 
-expr_un returns [Type return_type]:
+expr_un returns [Type return_type, boolean lvalue = false]:
 		('not' | '-') expr_un {$return_type = $expr_un.return_type;}
-	|	expr_mem { $return_type = $expr_mem.return_type;}
+	|	expr_mem {
+            $return_type = $expr_mem.return_type;
+            $lvalue = $expr_mem.lvalue;
+        }
 	;
 
-expr_mem returns [Type return_type]:
+expr_mem returns [Type return_type, boolean lvalue = false]:
 		expr_other expr_mem_tmp
-        { $return_type = $expr_other.return_type;}
+        {
+            $return_type = $expr_other.return_type.get_sub_array($expr_mem_tmp.dimension);
+            $lvalue = $expr_other.lvalue;
+        }
 	;
 
-expr_mem_tmp:
-		'[' expr ']' expr_mem_tmp
-	|
+expr_mem_tmp returns [int dimension]:
+		'[' temp = expr temp2 = ']' expr_mem_tmp {
+            if(!$temp.return_type.equals(IntType.getInstance()))
+                UtilsPass2.print("Error " + $temp2.getLine() + ") invalid index!");
+            else
+                $dimension = $expr_mem_tmp.dimension + 1;
+            }
+	|    {$dimension = 0;}
 	;
 
-expr_other returns [Type return_type]:
+expr_other returns [Type return_type, boolean lvalue = false]:
 		CONST_NUM { $return_type =  IntType.getInstance(); }
 	|	CONST_CHAR{ $return_type =  CharType.getInstance(); }
 	|	str = CONST_STR { $return_type = new ArrayType($str.text.length()-2,CharType.getInstance());}
 	|	name = ID {
             SymbolTableVariableItemBase item = (SymbolTableVariableItemBase) UtilsPass2.def_check($name.text, $name.getLine());
             $return_type = item.getVariable().getType();
+            $lvalue = true;
         }
-	|	'{' expr (',' expr)* '}'
+	|	{int counter = 0;}
+        '{' temp = expr{counter++;} (k = ',' temp2 = expr{
+            if(!$temp2.return_type.equals($temp.return_type)){
+                UtilsPass2.print("Error " + $k.getLine() + ") types dont match!");
+                counter = -1;
+                $return_type = NoType.getInstance();
+            }
+            if(counter != -1)
+                counter++;
+            })* '}'{
+                if(counter != -1)
+                    $return_type = new ArrayType(counter, $temp.return_type);
+            }
 	|	'read' '(' CONST_NUM ')'
-	|	'(' expr ')'
+	|	'(' expr ')' {$return_type = $expr.return_type;}
 	;
 
 CONST_NUM:

@@ -17,6 +17,11 @@ public class IntType extends Type {
     }
 
 	@Override
+	public Type get_sub_array(int x){
+        return this;
+    }
+
+	@Override
 	public String toString() {
 		return "int";
 	}

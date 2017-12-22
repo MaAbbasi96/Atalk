@@ -21,6 +21,11 @@ public class NoType extends Type {
 		return 0;
 	}
 
+	@Override
+	public Type get_sub_array(int x){
+		return this;
+	}
+
 	private static NoType instance;
 
 	public static NoType getInstance() {

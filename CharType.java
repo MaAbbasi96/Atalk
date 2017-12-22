@@ -23,6 +23,11 @@ public class CharType extends Type {
 
 	private static CharType instance;
 
+	@Override
+	public Type get_sub_array(int x){
+        return this;
+    }
+
 	public static CharType getInstance() {
 		if(instance == null)
 			return instance = new CharType();

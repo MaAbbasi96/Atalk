@@ -31,6 +31,14 @@ public class ArrayType extends Type {
 		return "array";
 	}
 
+    @Override
+    public Type get_sub_array(int x){
+        if(x == 0)
+            return this;
+        else
+            return tail.get_sub_array(x - 1);
+    }
+
     private int size;
     private Type tail;
 
