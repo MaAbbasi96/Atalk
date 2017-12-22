@@ -22,12 +22,15 @@ program:
 actor:
 		'actor' actor_name = ID '<' actor_box_size = CONST_NUM '>' NL
             {
-                Utils.putActor($actor_name.text, $actor_box_size.int, $actor_name.getLine());
                 Utils.have_actor = true;
                 Utils.beginScope();
             }
 			(state | receiver | NL)*
-            {Utils.endScope();}
+            {
+                SymbolTable st = SymbolTable.top;
+                Utils.endScope();
+                Utils.putActor($actor_name.text, $actor_box_size.int, $actor_name.getLine(), st);
+            }
         'end' (NL | EOF)
 	;
 

@@ -101,14 +101,14 @@ public class Utils {
                 }
             }
     }
-    public static void putActor(String name, int box_size, int line){
+    public static void putActor(String name, int box_size, int line, SymbolTable symbolTable){
         String firstName = name;
         if(box_size <= 0){
             box_size = 0;
             have_error = true;
         }
         try{
-            putItem(new SymbolTableActorItem(new Actor(name, box_size)));
+            putItem(new SymbolTableActorItem(new Actor(name, box_size, symbolTable)));
             log += "Actor: " + firstName + " with size: " + box_size + "\n";
         }
         catch(ItemAlreadyExistsException ex) {
@@ -117,7 +117,7 @@ public class Utils {
             print(String.format("[Line #%s] Actor \"%s\" already exists.", line, firstName));
             while(true){
                 try{
-                    putItem(new SymbolTableActorItem(new Actor(name + "_temp_" + counter, box_size)));
+                    putItem(new SymbolTableActorItem(new Actor(name + "_temp_" + counter, box_size, symbolTable)));
                     break;
                 }
                 catch(ItemAlreadyExistsException ex1){

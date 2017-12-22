@@ -26,15 +26,20 @@ state:
 
 receiver:
         { int counter = 0; }
-		'receiver' ID '(' (type ID {counter++;} (',' type ID {counter++;}  )*)? ')' NL
-        {UtilsPass2.beginScope();}
-            {
-                for(int i=0; i<counter; i++)
-                    SymbolTable.define();
-            }
+		'receiver' name = ID '(' (type ID {counter++;} (',' type ID {counter++;}  )*)? ')' NL
+        {
+            UtilsPass2.beginScope();
+            if($name.text.equals("init") && counter == 0)
+                UtilsPass2.init_with_no_args = true;
+            for(int i=0; i<counter; i++)
+                SymbolTable.define();
+        }
 			statements
 		'end' NL
-        {UtilsPass2.endScope();}
+        {
+            UtilsPass2.endScope();
+            UtilsPass2.init_with_no_args = false;
+        }
 	;
 
 type:
@@ -71,8 +76,9 @@ stm_vardef:
 	;
 
 stm_tell:
-		(actorName = ID | 'sender' | 'self') '<<' funcName = ID '(' (expr (',' expr)*)? ')' NL
-        {UtilsPass2.check_actor($actorName.text, $funcName.text, $actorName.getLine());}
+        {ArrayList<String> args = new ArrayList<>();}
+		actorName = (ID | 'sender' | 'self') '<<' funcName = ID '(' (temp = expr{args.add($temp.return_type.toString());} (',' temp = expr {args.add($temp.return_type.toString());})*)? ')' NL
+        {UtilsPass2.tell_check($actorName.text, $funcName.text, $actorName.getLine(), args);}
 	;
 
 stm_write:

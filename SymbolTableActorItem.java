@@ -12,5 +12,9 @@ public class SymbolTableActorItem extends SymbolTableItem {
 		return actor.getName();
 	}
 
+	public SymbolTable getActorSymbolTable(){
+		return actor.getSymbolTable();
+	}
+
 	Actor actor;
 }
