@@ -40,8 +40,10 @@ public class Utils {
 
     public static void putLocalVar(ArrayList<String> name, Type type, int line){
         for(int i = 0; i < name.size(); i++){
-            if(!type.is_valid())
+            if(!type.is_valid()){
+                have_error = true;
                 print(String.format("[Line #%s] Variable \"%s\" wrong size.", line, name.get(i)));
+            }
             try {
                 putItem(new SymbolTableLocalVariableItem(new Variable(name.get(i), type),SymbolTable.top.getOffset(Register.SP)));
                 log += "ID: " + name.get(i) + " with type: " + type + " and size: " + type.size() + " and Local offset: " + (SymbolTable.top.getOffset(Register.SP) - type.size()) + "\n";
@@ -130,8 +132,10 @@ public class Utils {
 
     public static void putGlobalVar(Type type, ArrayList<String> name, int line) {
         for(int i = 0; i < name.size(); i++){
-            if(!type.is_valid())
+            if(!type.is_valid()){
+                have_error = true;
                 print(String.format("[Line #%s] Variable \"%s\" wrong size.", line, name.get(i)));
+            }
             try {
                 putItem(new SymbolTableGlobalVariableItem(new Variable(name.get(i), type),SymbolTable.top.getOffset(Register.GP)));
                 log += "ID: " + name.get(i) + " with type: " + type + " and size: " + type.size() + " and Global offset: " + (SymbolTable.top.getOffset(Register.GP) - type.size()) + "\n";
