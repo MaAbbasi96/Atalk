@@ -47,12 +47,18 @@ public class UtilsPass2 {
     }
     public static void tell_check(String actorName, String funcName, int line, ArrayList<String> args){
         SymbolTableItem item = SymbolTable.top.get(actorName);
-        if(item == null && !actorName.equals("sender") && !actorName.equals("self"))
+        if(item == null && !actorName.equals("sender") && !actorName.equals("self")){
             print("Error " + line + ") Undefined Actor. Actor " + actorName + " doesn't exist.");
-        if(actorName.equals("sender") && init_with_no_args == true)
+            return;
+        }
+        if(actorName.equals("sender") && init_with_no_args == true){
             print("Error " + line + ") Cannot use sender inside init() with no arguments");
+            return;
+        }
         else{
             print(line + ") Actor " + actorName + " used.");
+            if(actorName.equals("sender"))
+                return;
             SymbolTable actorST;
             if(actorName.equals("self") || actorName.equals("sender"))
                 actorST = SymbolTable.top;
@@ -76,5 +82,23 @@ public class UtilsPass2 {
             print("Error " + line + ") Undefined Receiver. Receiver " + name + " doesn't exist.");
         else
             print(line + ") Receiver " + name + " used.");
+    }
+
+    public static void putIterator(String name, Type type, int line){
+        if(!type.toString().equals("array")){
+            print("Error " + line + ") Iterator mismatch!");
+            return;
+        }
+        try{
+            putItem(new SymbolTableIteratorItem(new Variable(name, type.get_sub_array(1)),SymbolTable.top.getOffset(Register.TEMP0)));
+        }
+        catch(ItemAlreadyExistsException ex){}
+    }
+
+    public static boolean setLvalueFlag(String name){
+        SymbolTableItem item = SymbolTable.top.get(name);
+        if(((SymbolTableVariableItemBase)item).getBaseRegister() == Register.TEMP0)
+            return false;
+        return true;
     }
 }

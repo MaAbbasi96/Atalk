@@ -82,19 +82,27 @@ stm_tell:
 	;
 
 stm_write:
-		'write' '(' expr ')' NL
+		'write' '(' expr ')' temp = NL {
+            if(!$expr.return_type.get_sub_array(1).equals(CharType.getInstance()))
+                UtilsPass2.print("Error " + $temp.getLine() + ") Invalid argument for Write function");
+            if($expr.return_type.toString().equals("notype"))
+                UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operatio");
+        }
 	;
 
 stm_if_elseif_else:
-		'if'{UtilsPass2.beginScope();} expr NL statements {UtilsPass2.endScope();}
-		('elseif'{UtilsPass2.beginScope();} expr NL statements {UtilsPass2.endScope();})*
+		temp = 'if'{UtilsPass2.beginScope();} expr{if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operation");} NL statements {UtilsPass2.endScope();}
+		(temp = 'elseif'{UtilsPass2.beginScope();} expr{if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operatio");} NL statements {UtilsPass2.endScope();})*
 		('else'{UtilsPass2.beginScope();} NL statements{UtilsPass2.endScope();})?
 		'end' NL
 	;
 
 stm_foreach:
-        {UtilsPass2.beginScope();}
-		'foreach' ID 'in' expr NL
+		'foreach' name = ID 'in' expr NL
+        {
+            UtilsPass2.beginScope();
+            UtilsPass2.putIterator($name.text, $expr.return_type, $name.getLine());
+        }
 			statements
 		'end' NL
         {UtilsPass2.endScope();}
@@ -110,8 +118,8 @@ stm_break:
 
 stm_assignment:
 		expr temp = NL {
-            if($expr.return_type.toString() == "notype")
-                UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operand");
+            if($expr.return_type.toString().equals("notype"))
+                UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operatio");
         }
 	;
 
@@ -252,7 +260,7 @@ expr_other returns [Type return_type, boolean lvalue = false]:
 	|	name = ID {
             SymbolTableVariableItemBase item = (SymbolTableVariableItemBase) UtilsPass2.def_check($name.text, $name.getLine());
             $return_type = item.getVariable().getType();
-            $lvalue = true;
+            $lvalue = UtilsPass2.setLvalueFlag($name.text);
         }
 	|	{int counter = 0;}
         '{' temp = expr{counter++;} (k = ',' temp2 = expr{
@@ -267,7 +275,7 @@ expr_other returns [Type return_type, boolean lvalue = false]:
                 if(counter != -1)
                     $return_type = new ArrayType(counter, $temp.return_type);
             }
-	|	'read' '(' CONST_NUM ')'
+	|	'read' '(' size = CONST_NUM ')'{$return_type = new ArrayType($size.int, CharType.getInstance());}
 	|	'(' expr ')' {$return_type = $expr.return_type;}
 	;
 
