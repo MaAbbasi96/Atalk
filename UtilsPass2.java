@@ -18,10 +18,10 @@ public class UtilsPass2 {
         SymbolTable.pop();
     }
 
-    public static void def_check(String name, int line){
+    public static SymbolTableItem def_check(String name, int line){
         SymbolTableItem item = SymbolTable.top.get(name);
         if(item == null) {
-            print(line + ") Item " + name + " doesn't exist.");
+            print("Error " + line + ") Undefined Reference. " + name + " doesn't exist.");
             try{
                 item = new SymbolTableLocalVariableTempItem(new Variable(name, NoType.getInstance()),SymbolTable.top.getOffset(Register.SP));
                 putItem(item);
@@ -33,6 +33,15 @@ public class UtilsPass2 {
             SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) item;
             print(line + ") Variable " + name + " used.\t\t" +   "Base Reg: " + var.getBaseRegister() + ", Offset: " + var.getOffset());
         }
+        return item;
+    }
+    public static Type generate_type(Type exp1, Type exp2){
+        Type res;
+        if(exp1 == exp2 || exp2 == null)
+            res = exp1;
+        else
+            res = NoType.getInstance();
+        return res;
     }
     public static void check_actor(String actorName, String funcName, int line){
 

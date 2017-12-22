@@ -103,7 +103,10 @@ stm_break:
 	;
 
 stm_assignment:
-		expr NL
+		expr temp = NL {
+            if($expr.return_type.toString() == "notype")
+                UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operand");
+        }
 	;
 
 expr returns [Type return_type]:
@@ -112,82 +115,78 @@ expr returns [Type return_type]:
 	;
 
 expr_assign returns [Type return_type]:
-		expr_or '=' expr_assign
+		expr_or '=' expr_assign {$return_type = UtilsPass2.generate_type($expr_or.return_type, $expr_assign.return_type);}
 	|	expr_or {$return_type = $expr_or.return_type;}
 	;
 
 expr_or returns [Type return_type]:
 		expr_and expr_or_tmp
-        {$return_type = $expr_or_tmp.return_type;}
+        {$return_type = UtilsPass2.generate_type($expr_and.return_type, $expr_or_tmp.return_type);}
 	;
 
 expr_or_tmp returns [Type return_type]:
 		'or' expr_and expr_or_tmp
-        {$return_type = $expr_and.return_type;}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_and.return_type, $expr_or_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_and returns [Type return_type]:
 		expr_eq expr_and_tmp
-        {$return_type = $expr_and_tmp.return_type;}
+        {$return_type = UtilsPass2.generate_type($expr_eq.return_type, $expr_and_tmp.return_type);}
 	;
 
 expr_and_tmp returns [Type return_type]:
 		'and' expr_eq expr_and_tmp
-        {$return_type = $expr_eq.return_type;}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_eq.return_type, $expr_and_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_eq returns [Type return_type]:
 		expr_cmp expr_eq_tmp
-        {$return_type = $expr_eq_tmp.return_type;}
+        {$return_type = UtilsPass2.generate_type($expr_cmp.return_type, $expr_eq_tmp.return_type);}
 	;
 
 expr_eq_tmp returns [Type return_type]:
 		('==' | '<>') expr_cmp expr_eq_tmp
-        {$return_type = $expr_cmp.return_type;}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_cmp.return_type, $expr_eq_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_cmp returns [Type return_type]:
 		expr_add expr_cmp_tmp
-        {$return_type = $expr_cmp_tmp.return_type;}
+        {$return_type = UtilsPass2.generate_type($expr_add.return_type, $expr_cmp_tmp.return_type);}
 	;
 
 expr_cmp_tmp returns [Type return_type]:
 		('<' | '>') expr_add expr_cmp_tmp
-        {$return_type = $expr_add.return_type;}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_add.return_type, $expr_cmp_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_add returns [Type return_type]:
 		expr_mult expr_add_tmp
-        {$return_type = $expr_add_tmp.return_type;}
-
+        {$return_type = UtilsPass2.generate_type($expr_mult.return_type, $expr_add_tmp.return_type);}
 	;
 
 expr_add_tmp returns [Type return_type]:
 		('+' | '-') expr_mult expr_add_tmp
-        {$return_type = $expr_mult.return_type;}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_mult.return_type, $expr_add_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_mult returns [Type return_type]:
 		expr_un expr_mult_tmp
-        {$return_type = $expr_mult_tmp.return_type;}
+        {$return_type = UtilsPass2.generate_type($expr_un.return_type, $expr_mult_tmp.return_type);}
 	;
 
 expr_mult_tmp returns [Type return_type]:
 		('*' | '/') expr_un expr_mult_tmp
-        {
-        $return_type = $expr_un.return_type;
-        if($return_type!= null)
-        UtilsPass2.print($return_type.toString());}
-	|
+        {$return_type = UtilsPass2.generate_type($expr_un.return_type, $expr_mult_tmp.return_type);}
+	|   {$return_type = null;}
 	;
 
 expr_un returns [Type return_type]:
-		('not' | '-') expr_un
+		('not' | '-') expr_un {$return_type = $expr_un.return_type;}
 	|	expr_mem { $return_type = $expr_mem.return_type;}
 	;
 
@@ -196,9 +195,8 @@ expr_mem returns [Type return_type]:
         { $return_type = $expr_other.return_type;}
 	;
 
-expr_mem_tmp returns [Type return_type]:
+expr_mem_tmp:
 		'[' expr ']' expr_mem_tmp
-        { $return_type = $expr.return_type;}
 	|
 	;
 
@@ -206,7 +204,10 @@ expr_other returns [Type return_type]:
 		CONST_NUM { $return_type =  IntType.getInstance(); }
 	|	CONST_CHAR{ $return_type =  CharType.getInstance(); }
 	|	str = CONST_STR { $return_type = new ArrayType($str.text.length()-2,CharType.getInstance());}
-	|	name = ID {UtilsPass2.def_check($name.text, $name.getLine());}
+	|	name = ID {
+            SymbolTableVariableItemBase item = (SymbolTableVariableItemBase) UtilsPass2.def_check($name.text, $name.getLine());
+            $return_type = item.getVariable().getType();
+        }
 	|	'{' expr (',' expr)* '}'
 	|	'read' '(' CONST_NUM ')'
 	|	'(' expr ')'
