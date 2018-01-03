@@ -4,3 +4,4 @@ Atalk*.javar
 input.atalk
 AtalkPass1*.java
 AtalkPass2*.java
+out.asm
