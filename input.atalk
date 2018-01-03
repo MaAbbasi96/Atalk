@@ -1,0 +1,8 @@
+actor Adder<10>
+    int x
+    int y, z
+    receiver init()
+        x = not 0
+        write(x)
+    end
+end

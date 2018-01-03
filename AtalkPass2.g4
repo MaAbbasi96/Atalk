@@ -266,7 +266,10 @@ expr_mult_tmp returns [Type return_type, boolean lvalue = false]:
 
 expr_un [boolean isLeft] returns  [Type return_type, boolean lvalue = false]:
 		op=('not' | '-') expr_un [isLeft] {
-             mips.operationCommand($op.text);
+            if($op.text.equals("-"))
+                mips.operationCommand($op.text + "-");
+            else
+                mips.operationCommand($op.text);
             $return_type = $expr_un.return_type;
         }
 	|	expr_mem [isLeft] {

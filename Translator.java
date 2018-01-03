@@ -8,12 +8,18 @@ import java.io.*;
 public class Translator {
 
     private File output;
+    private int labelCount;
     private ArrayList <String> instructions;
     private ArrayList <String> initInstructions;
+
+    private String labelGenerator(){
+        return "LABEL" + (labelCount++);
+    }
 
     public Translator(){
         instructions = new ArrayList<String>();
         initInstructions = new ArrayList<String>();
+        labelCount = 0;
         output = new File("out.asm");
         try {
             output.createNewFile();
@@ -96,7 +102,6 @@ public class Translator {
         instructions.add("sw $a0, 0($a1)");
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
-        popStack();
         instructions.add("# end of assign");
     }
 
@@ -135,6 +140,94 @@ public class Translator {
             instructions.add("lw $a1, 4($sp)");
             popStack();
             instructions.add("sub $a0, $a1, $a0");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add("addiu $sp, $sp, -4");
+        }
+        else if (s.equals("or")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            instructions.add("or $a0, $a1, $a0");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add("addiu $sp, $sp, -4");
+        }
+        else if (s.equals("and")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            instructions.add("and $a0, $a1, $a0");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add("addiu $sp, $sp, -4");
+        }
+        else if (s.equals("==")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            String label1 = labelGenerator();
+            String label2 = labelGenerator();
+            instructions.add("beq $a0, $a1, " + label1);
+            instructions.add("sw $zero, 0($sp)");
+            instructions.add("j " + label2);
+            instructions.add(label1 + ": addiu $a0, $zero, 1");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add(label2 + ": addiu $sp, $sp, -4");
+        }
+        else if (s.equals("<>")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            String label1 = labelGenerator();
+            String label2 = labelGenerator();
+            instructions.add("bne $a0, $a1, " + label1);
+            instructions.add("sw $zero, 0($sp)");
+            instructions.add("j " + label2);
+            instructions.add(label1 + ": addiu $a0, $zero, 1");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add(label2 + ": addiu $sp, $sp, -4");
+        }
+        else if (s.equals(">")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            String label1 = labelGenerator();
+            String label2 = labelGenerator();
+            instructions.add("blt $a0, $a1, " + label1);
+            instructions.add("sw $zero, 0($sp)");
+            instructions.add("j " + label2);
+            instructions.add(label1 + ": addiu $a0, $zero, 1");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add(label2 + ": addiu $sp, $sp, -4");
+        }
+        else if (s.equals("<")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            String label1 = labelGenerator();
+            String label2 = labelGenerator();
+            instructions.add("bgt $a0, $a1, " + label1);
+            instructions.add("sw $zero, 0($sp)");
+            instructions.add("j " + label2);
+            instructions.add(label1 + ": addiu $a0, $zero, 1");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add(label2 + ": addiu $sp, $sp, -4");
+        }
+        else if (s.equals("not")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("not $a0, $a0");
+            instructions.add("sw $a0, 0($sp)");
+            instructions.add("addiu $sp, $sp, -4");
+        }
+        else if (s.equals("--")){
+            instructions.add("lw $a0, 4($sp)");
+            popStack();
+            instructions.add("sub $a0, $zero, $a0");
             instructions.add("sw $a0, 0($sp)");
             instructions.add("addiu $sp, $sp, -4");
         }
