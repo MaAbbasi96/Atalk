@@ -12,7 +12,7 @@ public class Translator {
     private ArrayList <String> instructions;
     private ArrayList <String> initInstructions;
 
-    private String labelGenerator(){
+    public String labelGenerator(){
         return "LABEL" + (labelCount++);
     }
 
@@ -45,13 +45,30 @@ public class Translator {
     }
 
     public void addToStack(int x){
-        System.out.println("" + x);
         instructions.add("# adding a number to stack");
         instructions.add("li $a0, " + x);
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
         instructions.add("# end of adding a number to stack");
 
+    }
+
+    public String beginIf(){
+        instructions.add("# start of if block");
+        instructions.add("lw $a0, 4($sp)");
+        popStack();
+        String label = labelGenerator();
+        instructions.add("beq $a0, $zero, " + label);
+        instructions.add("# end of if block");
+        return label;
+    }
+
+    public void addLabel(String label){
+        instructions.add(label + ": ");
+    }
+
+    public void jumpTo(String label){
+        instructions.add("j " + label);
     }
 
     public void addToStack(String s, int adr){

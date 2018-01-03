@@ -108,11 +108,11 @@ stm_write:
         }
 	;
 
-stm_if_elseif_else:
-		temp = 'if'{UtilsPass2.beginScope();} expr{if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operation");} NL statements {UtilsPass2.endScope();}
-		(temp = 'elseif'{UtilsPass2.beginScope();} expr{if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operatio");} NL statements {UtilsPass2.endScope();})*
-		('else'{UtilsPass2.beginScope();} NL statements{UtilsPass2.endScope();})?
-		'end' NL
+stm_if_elseif_else: {String nextLabel, endLabel;}
+		temp = 'if'{UtilsPass2.beginScope();} expr {if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operation"); nextLabel = mips.beginIf();} NL statements {endLabel = mips.labelGenerator(); mips.jumpTo(endLabel); UtilsPass2.endScope();}
+		(temp = 'elseif'{UtilsPass2.beginScope(); mips.addLabel(nextLabel);} expr{if($expr.return_type.toString().equals("notype")) UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operatio"); nextLabel = mips.beginIf();} NL statements {mips.jumpTo(endLabel); UtilsPass2.endScope();})*
+		('else'{UtilsPass2.beginScope(); mips.addLabel(nextLabel);} NL statements{mips.jumpTo(endLabel); UtilsPass2.endScope();})?
+		'end'{mips.addLabel(endLabel);} NL
 	;
 
 stm_foreach:
