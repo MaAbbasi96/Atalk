@@ -104,7 +104,7 @@ stm_write:
                 UtilsPass2.print("Error " + $temp.getLine() + ") Invalid argument for Write function");
             if($expr.return_type.toString().equals("notype"))
                 UtilsPass2.print("Error " + $temp.getLine() + ") " + "Invalid Operation");
-            mips.write();
+            mips.write($expr.return_type.toString());
         }
 	;
 
@@ -298,7 +298,7 @@ expr_mem_tmp returns [int dimension]:
 
 expr_other [boolean isLeft] returns [Type return_type, boolean lvalue = false]:
 		num = CONST_NUM { $return_type =  IntType.getInstance(); mips.addToStack(Integer.parseInt($num.text)); }
-	|	num = CONST_CHAR { $return_type =  CharType.getInstance(); }
+	|	ch = CONST_CHAR { $return_type =  CharType.getInstance(); mips.addToStack((int)$ch.text.charAt(1));}
 	|	str = CONST_STR { $return_type = new ArrayType($str.text.length()-2,CharType.getInstance());}
 	|	name = ID {
             SymbolTableVariableItemBase item = (SymbolTableVariableItemBase) UtilsPass2.def_check($name.text, $name.getLine());

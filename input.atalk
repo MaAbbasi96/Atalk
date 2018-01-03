@@ -1,8 +1,11 @@
 actor Adder<10>
     int x
     int y, z
+    char v
     receiver init()
-        x = not 0
+        v = 'c'
         write(x)
+        write(v)
+
     end
 end

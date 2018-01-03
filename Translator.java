@@ -45,6 +45,7 @@ public class Translator {
     }
 
     public void addToStack(int x){
+        System.out.println("" + x);
         instructions.add("# adding a number to stack");
         instructions.add("li $a0, " + x);
         instructions.add("sw $a0, 0($sp)");
@@ -234,10 +235,13 @@ public class Translator {
         instructions.add("# end of operation " + s);
     }
 
-    public void write(){
+    public void write(String type){
         instructions.add("# writing");
         instructions.add("lw $a0, 4($sp)");
-        this.addSystemCall(1);
+        if(type.equals("int"))
+            this.addSystemCall(1);
+        else if(type.equals("char"))
+            this.addSystemCall(11);
         popStack();
         instructions.add("addi $a0, $zero, 10");
         this.addSystemCall(11);
