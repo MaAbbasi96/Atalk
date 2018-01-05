@@ -1,12 +1,8 @@
 actor Adder<10>
+    int[3] a
     receiver init()
-        if 0
-            write(5)
-        elseif 0
-            write(2)
-        else
-            write(4)
-        end
-        write(3)
+        a[1] = 5 * 6
+        write(a[1])
+        write(a[0])
     end
 end

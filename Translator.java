@@ -71,28 +71,56 @@ public class Translator {
         instructions.add("j " + label);
     }
 
-    public void addToStack(String s, int adr){
+    public void addToStack(String s, int adr, ArrayList<Integer> indeces, int dimension){
 //        int adr = table.getAddress(s)*(-1);
         instructions.add("# start of adding variable to stack");
-        instructions.add("lw $a0, " + adr + "($fp)");
+        instructions.add("addiu $a0, $fp, " + adr );
+        for(int i = 0; i < dimension; i++){
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            for(int j = 0; j < i; j++){
+                instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
+                instructions.add("mul $a1, $a1, $a2");
+            }
+            instructions.add("add $a0, $a0, $a1");
+        }
+        instructions.add("lw $a0, 0($a0)");
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
         instructions.add("# end of adding variable to stack");
     }
 
-    public void addAddressToStack(String s, int adr) {
+    public void addAddressToStack(String s, int adr, ArrayList<Integer> indeces, int dimension) {
 //        int adr = table.getAddress(s)*(-1);
         instructions.add("# start of adding address to stack");
-        instructions.add("addiu $a0, $fp, " + adr);
+        instructions.add("addiu $a0, $fp, " + adr );
+        for(int i = 0; i < dimension; i++){
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            for(int j = 0; j < i; j++){
+                instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
+                instructions.add("mul $a1, $a1, $a2");
+            }
+            instructions.add("add $a0, $a0, $a1");
+        }
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
         instructions.add("# end of adding address to stack");
     }
 
-    public void addGlobalAddressToStack(String s, int adr){
+    public void addGlobalAddressToStack(String s, int adr, ArrayList<Integer> indeces, int dimension){
 //        int adr = table.getAddress(s)*(-1);
         instructions.add("# start of adding global address to stack");
         instructions.add("addiu $a0, $gp, " + adr);
+        for(int i = 0; i < dimension; i++){
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            for(int j = 0; j < i; j++){
+                instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
+                instructions.add("mul $a1, $a1, $a2");
+            }
+            instructions.add("add $a0, $a0, $a1");
+        }
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
         instructions.add("# end of adding global address to stack");
@@ -265,10 +293,20 @@ public class Translator {
         instructions.add("# end of writing");
     }
 
-    public void addGlobalToStack(int adr){
+    public void addGlobalToStack(int adr, ArrayList<Integer> indeces, int dimension){
 //        int adr = table.getAddress(s)*(-1);
         instructions.add("# start of adding global variable to stack");
-        instructions.add("lw $a0, " + adr + "($gp)");
+        instructions.add("addiu $a0, $gp, " + adr);
+        for(int i = 0; i < dimension; i++){
+            instructions.add("lw $a1, 4($sp)");
+            popStack();
+            for(int j = 0; j < i; j++){
+                instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
+                instructions.add("mul $a1, $a1, $a2");
+            }
+            instructions.add("add $a0, $a0, $a1");
+        }
+        instructions.add("lw $a0, 0($a0)");
         instructions.add("sw $a0, 0($sp)");
         instructions.add("addiu $sp, $sp, -4");
         instructions.add("# end of adding global variable to stack");

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class ArrayType extends Type {
 
     public ArrayType(int size, Type tail){
@@ -8,6 +10,23 @@ public class ArrayType extends Type {
 	public int size() {
 		return size * tail.size();
 	}
+
+    @Override
+    public ArrayList<Integer> getIndeces(){
+        ArrayList<Integer> res = new ArrayList<>();
+        res.add(size);
+        Type temp = get_sub_array(0);
+        while(temp instanceof ArrayType){
+            temp = get_sub_array(1);
+            res.add(temp.getSize());
+        }
+        return res;
+    }
+
+    @Override
+	public int getSize(){
+        return this.size;
+    }
 
     @Override
     public boolean is_valid(){

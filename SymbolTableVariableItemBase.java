@@ -1,5 +1,7 @@
+import java.util.*;
+import java.io.*;
 public abstract class SymbolTableVariableItemBase extends SymbolTableItem {
-	
+
 	public SymbolTableVariableItemBase(Variable variable, int offset) {
 		this.variable = variable;
 		this.offset = offset;
@@ -7,6 +9,10 @@ public abstract class SymbolTableVariableItemBase extends SymbolTableItem {
 
 	public int getSize() {
 		return variable.size();
+	}
+
+	public ArrayList<Integer> getIndeces(){
+		return variable.getIndeces();
 	}
 
 	public int getOffset() {

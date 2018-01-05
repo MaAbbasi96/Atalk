@@ -29,7 +29,8 @@ state:
 		type var_id = ID (',' ID)* NL
         {
             SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) SymbolTable.top.get($var_id.text);
-            mips.addGlobalVariable(var.getOffset(), 0);
+            for(int i = 0; i < var.getSize()/4; i++)
+                mips.addGlobalVariable(var.getOffset(), 0);
         }
 	;
 
@@ -151,10 +152,10 @@ expr returns [Type return_type, boolean lvalue = false]:
 
 expr_assign returns [Type return_type, boolean lvalue = false]:
 		temp = expr_or[true] temp2 = '=' expr_assign {
-            mips.assignCommand();
             $return_type = UtilsPass2.generate_type($expr_or.return_type, $expr_assign.return_type);
             if(!$temp.lvalue)
                 UtilsPass2.print("Error " + $temp2.getLine() + ") Rvalue assignment!");
+            mips.assignCommand();
         }
 	|	expr_or[false] {
             $return_type = $expr_or.return_type;
@@ -279,10 +280,21 @@ expr_un [boolean isLeft] returns  [Type return_type, boolean lvalue = false]:
 	;
 
 expr_mem [boolean isLeft] returns [Type return_type, boolean lvalue = false]:
-		expr_other [isLeft] expr_mem_tmp
+		name = expr_other expr_mem_tmp
         {
             $return_type = $expr_other.return_type.get_sub_array($expr_mem_tmp.dimension);
             $lvalue = $expr_other.lvalue;
+            if($name.have_name){
+                SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) SymbolTable.top.get($name.idName);
+                if (var.getBaseRegister() == Register.SP){
+                    if ($isLeft == false) mips.addToStack($name.idName, var.getOffset()*-1, var.getIndeces(), $expr_mem_tmp.dimension);
+                    else mips.addAddressToStack($name.idName, var.getOffset()*-1, var.getIndeces(), $expr_mem_tmp.dimension);
+                }
+                else {
+                    if ($isLeft == false) mips.addGlobalToStack(var.getOffset(), var.getIndeces(), $expr_mem_tmp.dimension);
+                    else mips.addGlobalAddressToStack($name.idName, var.getOffset(), var.getIndeces(), $expr_mem_tmp.dimension);
+                }
+            }
         }
 	;
 
@@ -296,7 +308,7 @@ expr_mem_tmp returns [int dimension]:
 	|    {$dimension = 0;}
 	;
 
-expr_other [boolean isLeft] returns [Type return_type, boolean lvalue = false]:
+expr_other returns [Type return_type, boolean lvalue = false, String idName, boolean have_name = false]:
 		num = CONST_NUM { $return_type =  IntType.getInstance(); mips.addToStack(Integer.parseInt($num.text)); }
 	|	ch = CONST_CHAR { $return_type =  CharType.getInstance(); mips.addToStack((int)$ch.text.charAt(1));}
 	|	str = CONST_STR { $return_type = new ArrayType($str.text.length()-2,CharType.getInstance());}
@@ -304,15 +316,8 @@ expr_other [boolean isLeft] returns [Type return_type, boolean lvalue = false]:
             SymbolTableVariableItemBase item = (SymbolTableVariableItemBase) UtilsPass2.def_check($name.text, $name.getLine());
             $return_type = item.getVariable().getType();
             $lvalue = UtilsPass2.setLvalueFlag($name.text);
-            SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) SymbolTable.top.get($name.text);
-            if (var.getBaseRegister() == Register.SP){
-                if ($isLeft == false) mips.addToStack($name.text, var.getOffset()*-1);
-                else mips.addAddressToStack($name.text, var.getOffset()*-1);
-            }
-            else {
-                if ($isLeft == false) mips.addGlobalToStack(var.getOffset());
-                else mips.addGlobalAddressToStack($name.text, var.getOffset());
-            }
+            $idName = $name.text;
+            $have_name = true;
         }
 	|	{int counter = 0;}
         '{' temp = expr{counter++;} (k = ',' temp2 = expr{

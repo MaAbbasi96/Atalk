@@ -1,3 +1,5 @@
+import java.util.*;
+import java.io.*;
 public class NoType extends Type {
 
 	@Override
@@ -13,6 +15,13 @@ public class NoType extends Type {
 	}
 
 	@Override
+    public ArrayList<Integer> getIndeces(){
+        ArrayList<Integer> res = new ArrayList<>();
+        res.add(0);
+		return res;
+    }
+
+	@Override
 	public String toString() {
 		return "notype";
 	}
@@ -25,6 +34,11 @@ public class NoType extends Type {
 	public Type get_sub_array(int x){
 		return this;
 	}
+
+	@Override
+	public int getSize(){
+        return 1;
+    }
 
 	private static NoType instance;
 

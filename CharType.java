@@ -1,3 +1,5 @@
+import java.util.*;
+import java.io.*;
 public class CharType extends Type {
 
 	public int size() {
@@ -10,6 +12,13 @@ public class CharType extends Type {
 			return true;
 		return false;
 	}
+
+	@Override
+    public ArrayList<Integer> getIndeces(){
+        ArrayList<Integer> res = new ArrayList<>();
+        res.add(0);
+		return res;
+    }
 
 	@Override
 	public boolean is_valid(){
@@ -26,6 +35,11 @@ public class CharType extends Type {
 	@Override
 	public Type get_sub_array(int x){
         return this;
+    }
+
+	@Override
+	public int getSize(){
+        return 1;
     }
 
 	public static CharType getInstance() {
