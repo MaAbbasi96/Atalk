@@ -77,6 +77,7 @@ public class Translator {
         instructions.add("addiu $a0, $fp, " + adr );
         for(int i = 0; i < dimension; i++){
             instructions.add("lw $a1, 4($sp)");
+            instructions.add("sll $a1, $a1, 2");
             popStack();
             for(int j = 0; j < i; j++){
                 instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
@@ -96,6 +97,7 @@ public class Translator {
         instructions.add("addiu $a0, $fp, " + adr );
         for(int i = 0; i < dimension; i++){
             instructions.add("lw $a1, 4($sp)");
+            instructions.add("sll $a1, $a1, 2");
             popStack();
             for(int j = 0; j < i; j++){
                 instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
@@ -114,6 +116,7 @@ public class Translator {
         instructions.add("addiu $a0, $gp, " + adr);
         for(int i = 0; i < dimension; i++){
             instructions.add("lw $a1, 4($sp)");
+            instructions.add("sll $a1, $a1, 2");
             popStack();
             for(int j = 0; j < i; j++){
                 instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);
@@ -299,6 +302,7 @@ public class Translator {
         instructions.add("addiu $a0, $gp, " + adr);
         for(int i = 0; i < dimension; i++){
             instructions.add("lw $a1, 4($sp)");
+            instructions.add("sll $a1, $a1, 2");
             popStack();
             for(int j = 0; j < i; j++){
                 instructions.add("li $a2, " + indeces.get(indeces.size()-j-1) * 4);

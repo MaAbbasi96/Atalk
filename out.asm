@@ -6,11 +6,11 @@ sw $a0, 0($gp)
 # end of adding a global variable
 # adding a global variable
 li $a0, 0
-sw $a0, 0($gp)
+sw $a0, -4($gp)
 # end of adding a global variable
 # adding a global variable
 li $a0, 0
-sw $a0, 0($gp)
+sw $a0, -8($gp)
 # end of adding a global variable
 # adding a number to stack
 li $a0, 1
@@ -20,6 +20,7 @@ addiu $sp, $sp, -4
 # start of adding global address to stack
 addiu $a0, $gp, 0
 lw $a1, 4($sp)
+sll $a1, $a1, 2
 # pop stack
 addiu $sp, $sp, 4
 # end of pop stack
@@ -28,15 +29,33 @@ sw $a0, 0($sp)
 addiu $sp, $sp, -4
 # end of adding global address to stack
 # adding a number to stack
+li $a0, 6
+sw $a0, 0($sp)
+addiu $sp, $sp, -4
+# end of adding a number to stack
+# adding a number to stack
 li $a0, 5
 sw $a0, 0($sp)
 addiu $sp, $sp, -4
 # end of adding a number to stack
 # adding a number to stack
-li $a0, 6
+li $a0, 4
 sw $a0, 0($sp)
 addiu $sp, $sp, -4
 # end of adding a number to stack
+# operation *
+lw $a0, 4($sp)
+# pop stack
+addiu $sp, $sp, 4
+# end of pop stack
+lw $a1, 4($sp)
+# pop stack
+addiu $sp, $sp, 4
+# end of pop stack
+mul $a0, $a0, $a1
+sw $a0, 0($sp)
+addiu $sp, $sp, -4
+# end of operation *
 # operation *
 lw $a0, 4($sp)
 # pop stack
@@ -71,6 +90,7 @@ addiu $sp, $sp, -4
 # start of adding global variable to stack
 addiu $a0, $gp, 0
 lw $a1, 4($sp)
+sll $a1, $a1, 2
 # pop stack
 addiu $sp, $sp, 4
 # end of pop stack
@@ -102,6 +122,7 @@ addiu $sp, $sp, -4
 # start of adding global variable to stack
 addiu $a0, $gp, 0
 lw $a1, 4($sp)
+sll $a1, $a1, 2
 # pop stack
 addiu $sp, $sp, 4
 # end of pop stack

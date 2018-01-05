@@ -30,7 +30,7 @@ state:
         {
             SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) SymbolTable.top.get($var_id.text);
             for(int i = 0; i < var.getSize()/4; i++)
-                mips.addGlobalVariable(var.getOffset(), 0);
+                mips.addGlobalVariable(var.getOffset() - 4*i, 0);
         }
 	;
 
