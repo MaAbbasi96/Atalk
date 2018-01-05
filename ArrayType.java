@@ -16,10 +16,11 @@ public class ArrayType extends Type {
         ArrayList<Integer> res = new ArrayList<>();
         res.add(size);
         Type temp = get_sub_array(0);
-        while(temp instanceof ArrayType){
-            temp = get_sub_array(1);
+        for(int i = 1; temp instanceof ArrayType; i++){
+            temp = get_sub_array(i);
             res.add(temp.getSize());
         }
+        res.remove(res.size()-1);
         return res;
     }
 

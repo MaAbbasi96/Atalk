@@ -81,15 +81,18 @@ statement:
 	|	block
 	;
 
-stm_vardef: {int exp_value = 0;}
-		type ID ('=' expr)? {
+stm_vardef:
+		type var_id = ID ('=' expr)? {
             SymbolTable.define();
-            mips.addToStack(exp_value);
+            SymbolTableVariableItemBase var = (SymbolTableVariableItemBase) SymbolTable.top.get($var_id.text);
+            for(int i = 0; i < var.getSize()/4; i++)
+                mips.addToStack(0);
         }
-        (',' ID ('=' expr)? {
-            exp_value = 0;
+        (',' var_id = ID ('=' expr)? {
             SymbolTable.define();
-            mips.addToStack(exp_value);
+            var = (SymbolTableVariableItemBase) SymbolTable.top.get($var_id.text);
+            for(int i = 0; i < var.getSize()/4; i++)
+                mips.addToStack(0);
         } )* NL
 	;
 
